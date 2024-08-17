@@ -1,0 +1,152 @@
+-- User Tests
+INSERT INTO `user` (firstName, lastName, email, phone) 
+VALUES ('Peter', 'Lustig', 'maria.fernandes@communitylibrary.com', '123456789'); 
+
+-- Address Tests
+INSERT INTO address (street, houseNumber, `type`, postalCode) 
+VALUES ('Hermannstr.', 44, 'Schule', '12051'); 
+
+INSERT INTO address (street, houseNumber, `type`, postalCode) 
+VALUES ('Hermannstr.', 44, 'Arbeit', '99999'); 
+
+-- Postal Code Tests
+DELETE FROM postal_code 
+WHERE postalCode = '12043'; 
+
+DELETE FROM postal_code 
+WHERE postalCode = '12043'; 
+
+INSERT INTO postal_code (postalCode, neighborhood) 
+VALUES ('99999', 'Neukoelln'); 
+
+INSERT INTO postal_code (postalCode, neighborhood) 
+VALUES ('12045', 'Kreuzberg'); 
+
+INSERT INTO postal_code (postalCode, neighborhood) 
+VALUES ('12359', 'Britz'); 
+
+-- User Address Tests
+INSERT INTO user_address (userID, addressID) 
+VALUES (999, 1); 
+
+INSERT INTO user_address (userID, addressID) 
+VALUES (2, 999); 
+
+-- Book Details Tests
+INSERT INTO book_details (ISBN, title, author, publisher, publicationYear, genre, pages, `language`) 
+VALUES (NULL, '1984', 'George Orwell', 'Secker & Warburg', 1949, 'Dystopie', 328, 'English'); 
+
+INSERT INTO book_details (ISBN, title, author, publisher, publicationYear, genre, pages, `language`) 
+VALUES ('978-3-551-73471-0', NULL, 'Guy Delisle', 'Reprodukt', 2017, 'Graphic Novel', 432, 'German'); 
+
+-- Book Tests
+INSERT INTO book (`condition`, availability, deliveryMethod, userID, ISBN) 
+VALUES ('perfekt', 1, 'Versand', 10, '978-0-14-118776-1'); 
+
+INSERT INTO book (`condition`, availability, deliveryMethod, userID, ISBN) 
+VALUES ('neu', 1, 'Abholung', 999, '978-3-423-28007-5'); 
+
+-- Postal Code Postal Address Tests
+INSERT INTO postal_code_postal_address (postalcode, city) 
+VALUES (NULL, 'Hamburg'); 
+
+INSERT INTO postal_code_postal_address (postalcode, city) 
+VALUES ('20095', NULL); 
+
+INSERT INTO postal_code_postal_address (postalcode, city) 
+VALUES ('18055', 'Rostock'); 
+
+-- Postal Address Tests
+INSERT INTO postal_address (street, houseNumber, postalcode) 
+VALUES ('Königstraße', '15', '99999'); 
+
+-- User Postal Address Tests
+INSERT INTO user_postal_address (userID, postalID) 
+VALUES (1, 999); 
+
+INSERT INTO user_postal_address (userID, postalID) 
+VALUES (999, 1); 
+
+-- Waitlist Tests
+INSERT INTO waitlist (requestDate, endDate, `status`, userID, bookID) 
+VALUES ('2024-01-20', '2024-02-05', 'geschlossen', 3, 20); 
+
+INSERT INTO waitlist (requestDate, endDate, `status`, userID, bookID) 
+VALUES ('2024-01-25', '2024-02-10', 'offen', 999, 18); 
+
+INSERT INTO waitlist (requestDate, endDate, `status`, userID, bookID) 
+VALUES ('2024-01-30', '2024-02-15', 'offen', 1, 999); 
+
+-- Loan Tests
+INSERT INTO loan (startDate, endDate, `status`, `type`, requestingUserID, bookID) 
+VALUES ('2024-01-01', '2024-04-01', 'offen', 'Versand', 3, 21); 
+
+INSERT INTO loan (startDate, endDate, `status`, `type`, requestingUserID, bookID) 
+VALUES ('2024-01-01', '2024-01-10', 'geschlossen', 'Versand', 4, 22); 
+
+INSERT INTO loan (startDate, endDate, `status`, `type`, requestingUserID, bookID) 
+VALUES ('2024-01-01', '2024-01-10', 'offen', 'Lieferung', 5, 23); 
+
+INSERT INTO loan (startDate, endDate, `status`, `type`, requestingUserID, bookID) 
+VALUES ('2024-01-01', '2024-01-10', 'offen', 'Versand', 999, 24); 
+
+INSERT INTO loan (startDate, endDate, `status`, `type`, requestingUserID, bookID) 
+VALUES ('2024-01-01', '2024-01-10', 'offen', 'Versand', 6, 999); 
+
+-- Pickup Transaction Tests
+INSERT INTO pickup_transaction (addressID, loanID) 
+VALUES (999, 8); 
+
+INSERT INTO pickup_transaction (addressID, loanID) 
+VALUES (16, 999); 
+
+-- Shipping Transaction Tests
+INSERT INTO shipping_transaction (postalID, loanID) 
+VALUES (999, 22); 
+
+INSERT INTO shipping_transaction (postalID, loanID) 
+VALUES (3, 999); 
+
+-- Map Tests
+DELETE FROM map 
+WHERE mapID = 1; 
+
+INSERT INTO map (addressID) 
+VALUES (999); 
+
+-- Book Map Tests
+INSERT INTO book_map (mapID, bookID) 
+VALUES (999, 2); 
+
+INSERT INTO book_map (mapID, bookID) 
+VALUES (1, 999); 
+
+-- Rating Tests
+INSERT INTO rating (rating, `comment`, `date`, `type`) 
+VALUES (6, 'Ausgezeichnet', '2024-10-16', 'Buch'); 
+
+INSERT INTO rating (rating, `comment`, `date`, `type`) 
+VALUES (4, 'Gute Arbeit', '2024-10-17', 'Dienstleistung'); 
+
+-- User Rating Tests
+INSERT INTO user_rating (ratingID, reviewerUserID, reviewedUserID, loanID) 
+VALUES (999, 6, 15, 2); 
+
+INSERT INTO user_rating (ratingID, reviewerUserID, reviewedUserID, loanID) 
+VALUES (9, 999, 6, 2); 
+
+INSERT INTO user_rating (ratingID, reviewerUserID, reviewedUserID, loanID) 
+VALUES (9, 6, 999, 2); 
+
+INSERT INTO user_rating (ratingID, reviewerUserID, reviewedUserID, loanID) 
+VALUES (9, 6, 15, 999); 
+
+-- Book Rating Tests
+INSERT INTO book_rating (ratingID, loanID) 
+VALUES (999, 22); 
+
+INSERT INTO book_rating (ratingID, loanID) 
+VALUES (12, 999); 
+
+INSERT INTO book_rating (ratingID, loanID) 
+VALUES (3, 2);
