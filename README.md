@@ -74,7 +74,7 @@ Die Datenbank besteht aus 18 Tabellen, die folgendermaßen strukturiert sind:
 2. **Schritt-für-Schritt-Anleitung**:
    - Klone das Repository:
      ```bash
-     git clone https://github.com/dein-nutzername/dein-repository.git
+     git clone https://github.com/boroka796/PublicLibrary.git
      ```
    - Öffne die SQL-Dateien in deinem SQL-Editor.
    - Erstelle die Datenbank und führe die SQL-Skripte in folgender Reihenfolge aus:
@@ -122,4 +122,4 @@ sql-datenbankprojekt/
 
 ## Autoren
 
-- **Zsofia Borok** - [GitHub-Profil](https://github.com/dein-nutzername)
+- **Zsofia Borok** - boroka796 https://github.com/boroka796/PublicLibrary.git
