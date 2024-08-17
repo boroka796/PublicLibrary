@@ -1,0 +1,621 @@
+CREATE DATABASE communitylibrarydb; 
+
+CREATE TABLE user ( 
+    userID INT PRIMARY KEY AUTO_INCREMENT, 
+    firstName VARCHAR(50) NOT NULL, 
+    lastName VARCHAR(50) NOT NULL, 
+    email VARCHAR(100) NOT NULL UNIQUE, 
+    phone VARCHAR(20) 
+); 
+
+CREATE TABLE postal_code ( 
+    postalCode VARCHAR(5) PRIMARY KEY CHECK (postalCode IN ('12043','12045','12047','12049','12051','12053','12055','12057','12059','12347','12359','12349','12351','12353','12355','12357','12359')), 
+    neighborhood VARCHAR(50) NOT NULL CHECK (neighborhood IN ('Neukoelln', 'Britz', 'Rudow', 'Buckow', 'Gropiusstadt')) 
+); 
+
+CREATE TABLE address ( 
+    addressID INT PRIMARY KEY AUTO_INCREMENT, 
+    street VARCHAR(100) NOT NULL, 
+    houseNumber VARCHAR(10) NOT NULL, 
+    `type` ENUM('Arbeit', 'zu Hause', 'sonstiges') NOT NULL, 
+    postalCode VARCHAR(5) NOT NULL, 
+    FOREIGN KEY (postalCode) REFERENCES postal_code(postalCode) 
+); 
+
+CREATE TABLE user_address ( 
+    userID INT NOT NULL, 
+    addressID INT NOT NULL, 
+    PRIMARY KEY (userID, addressID), 
+    FOREIGN KEY (userID) REFERENCES user(userID), 
+    FOREIGN KEY (addressID) REFERENCES address(addressID) 
+); 
+
+CREATE TABLE book_details ( 
+    ISBN VARCHAR(20) PRIMARY KEY, 
+    title VARCHAR(200) NOT NULL, 
+    author VARCHAR(200) NOT NULL, 
+    publisher VARCHAR(100), 
+    publicationYear YEAR, 
+    genre VARCHAR(50), 
+    pages INT, 
+    `language` VARCHAR(50) 
+); 
+
+CREATE TABLE book ( 
+    bookID INT PRIMARY KEY AUTO_INCREMENT, 
+    `condition` ENUM('neu', 'wie neu', 'sehr gut', 'gut', 'akzeptabel', 'fehlerhaft') NOT NULL, 
+    availability BOOLEAN, 
+    deliveryMethod ENUM('Versand', 'Abholung', 'flexibel') NOT NULL, 
+    userID INT NOT NULL, 
+    ISBN VARCHAR(20) NOT NULL, 
+    FOREIGN KEY (userID) REFERENCES user(userID), 
+    FOREIGN KEY (ISBN) REFERENCES book_details(ISBN) 
+); 
+
+CREATE TABLE postal_code_postal_address ( 
+    postalcode VARCHAR(10) PRIMARY KEY, 
+    city VARCHAR(100) NOT NULL 
+); 
+
+CREATE TABLE postal_address ( 
+    postalID INT PRIMARY KEY AUTO_INCREMENT, 
+    street VARCHAR(100) NOT NULL, 
+    houseNumber VARCHAR(10) NOT NULL, 
+    postalcode VARCHAR(10) NOT NULL, 
+    FOREIGN KEY (postalcode) REFERENCES postal_code_postal_address(postalcode) 
+); 
+
+CREATE TABLE user_postal_address ( 
+    userID INT NOT NULL, 
+    postalID INT NOT NULL, 
+    PRIMARY KEY (userID, postalID), 
+    FOREIGN KEY (userID) REFERENCES user(userID), 
+    FOREIGN KEY (postalID) REFERENCES postal_address(postalID) 
+); 
+
+CREATE TABLE waitlist ( 
+    waitlistID INT PRIMARY KEY AUTO_INCREMENT, 
+    requestDate DATE NOT NULL, 
+    endDate DATE, 
+    `status` ENUM('offen', 'erfuellt', 'abgebrochen') NOT NULL, 
+    userID INT NOT NULL, 
+    bookID INT NOT NULL, 
+    FOREIGN KEY (userID) REFERENCES user(userID), 
+    FOREIGN KEY (bookID) REFERENCES book(bookID) 
+); 
+
+CREATE TABLE loan ( 
+    loanID INT PRIMARY KEY AUTO_INCREMENT, 
+    startDate DATE NOT NULL, 
+    endDate DATE, 
+    status ENUM('offen', 'zurueckgegeben', 'abgebrochen') NOT NULL, 
+    type ENUM('Abholung', 'Versand') NOT NULL, 
+    requestingUserID INT NOT NULL, 
+    bookID INT NOT NULL, 
+    CHECK (DATEDIFF(endDate, startDate) <= 60), 
+    FOREIGN KEY (requestingUserID) REFERENCES user(userID), 
+    FOREIGN KEY (bookID) REFERENCES book(bookID) 
+); 
+
+CREATE TABLE pickup_transaction ( 
+    pickupID INT PRIMARY KEY AUTO_INCREMENT, 
+    addressID INT NOT NULL, 
+    loanID INT NOT NULL, 
+    FOREIGN KEY (addressID) REFERENCES address(addressID), 
+    FOREIGN KEY (loanID) REFERENCES loan(loanID) 
+); 
+
+CREATE TABLE shipping_transaction ( 
+    shippingID INT PRIMARY KEY AUTO_INCREMENT, 
+    postalID INT NOT NULL, 
+    loanID INT NOT NULL, 
+    FOREIGN KEY (postalID) REFERENCES postal_address(postalID), 
+    FOREIGN KEY (loanID) REFERENCES loan(loanID) 
+); 
+
+CREATE TABLE map ( 
+    mapID INT PRIMARY KEY AUTO_INCREMENT UNIQUE, 
+    addressID INT NOT NULL, 
+    FOREIGN KEY (addressID) REFERENCES address(addressID) 
+); 
+
+CREATE TABLE book_map ( 
+    mapID INT NOT NULL, 
+    bookID INT NOT NULL, 
+    PRIMARY KEY (mapID, bookID), 
+    FOREIGN KEY (mapID) REFERENCES map(mapID), 
+    FOREIGN KEY (bookID) REFERENCES book(bookID) 
+); 
+
+CREATE TABLE rating ( 
+    ratingID INT PRIMARY KEY AUTO_INCREMENT, 
+    rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5), 
+    `comment` TEXT, 
+    `date` DATE NOT NULL, 
+    `type` ENUM('Buch', 'Benutzer') NOT NULL 
+); 
+
+CREATE TABLE user_rating ( 
+    ratingID INT PRIMARY KEY, 
+    reviewerUserID INT NOT NULL, 
+    reviewedUserID INT NOT NULL, 
+    loanID INT NOT NULL, 
+    FOREIGN KEY (ratingID) REFERENCES rating(ratingID), 
+    FOREIGN KEY (reviewerUserID) REFERENCES user(userID), 
+    FOREIGN KEY (reviewedUserID) REFERENCES user(userID), 
+    FOREIGN KEY (loanID) REFERENCES loan(loanID) 
+); 
+
+CREATE TABLE book_rating ( 
+    ratingID INT NOT NULL PRIMARY KEY, 
+    loanID INT NOT NULL UNIQUE, 
+    FOREIGN KEY (ratingID) REFERENCES rating(ratingID), 
+    FOREIGN KEY (loanID) REFERENCES loan(loanID) 
+); 
+
+INSERT INTO `user` (`firstName`, `lastName`, `email`, `phone`) VALUES 
+('Liam', 'Müller', 'liam.mueller@communitylibrary.com', '+49 151 23456789'), 
+('Leila', 'Johnson', 'leila.johnson@communitylibrary.com', '+49 160 98765432'), 
+('Emma', 'Schneider', 'emma.scheider@communitylibrary.com', '+49 171 12345678'), 
+('Alejandro', 'Garcia', 'alejandro.garcia@communitylibrary.com', '+49 152 87654321'), 
+('Hiroshi', 'Tanaka', 'hiroshi.tanaka@communitylibrary.com', '+49 162 12349745'), 
+('Noah', 'Schmidt', 'noah.schmidt@communitylibrary.com', '+49 163 45678901'), 
+('Aisha', 'Khan', 'aisha.khan@communitylibrary.com', '+49 172 65432198'), 
+('Olivia', 'Wagner', 'olivia.wagner@communitylibrary.com', '+49 173 78945612'), 
+('James', 'Fischer', 'james.fischer@communitylibrary.com', '+49 175 96325874'), 
+('Carlos', 'Rossi', 'carlos.rossi@communitylibrary.com', '+49 174 32165487'), 
+('Maria', 'Fernandes', 'maria.fernandes@communitylibrary.com', '+49 176 14785236'), 
+('Luca', 'Becker', 'luca.becker@communitylibrary.com', '+49 177 85296341'), 
+('Mia', 'Hoffmann', 'mia.hoffmann@communitylibrary.com', '+49 178 36987412'), 
+('Yasmin', 'Al-Farsi', 'jasmin.al-farsi@communitylibrary.com', '+49 187 32147896'), 
+('Ingrid', 'Larsen', 'ingrid.larsen@communitylibrary.com', '+49 162 78912365'), 
+('Emily', 'Lehmann', 'emily.lehman@communitylibrary.com', '+49 152 14796328'), 
+('Matteo', 'Meyer', 'matteo.meyer@communitylibrary.com', '+49 171 96321458'), 
+('Benjamin', 'Lang', 'bejamin.lang@communitylibrary.com', '+49 160 74185296'), 
+('Samuel', 'Wolf', 'samuel.wolf@communitylibrary.com', '+49 151 65478932'), 
+('Sofia', 'Petrova', 'sofia.petrova@communitylibrary.com', '+49 179 25874136'), 
+('Fernando', 'Lopez', 'fernando.lopez@communitylibrary.com', '+49 178 36987412');
+
+INSERT INTO `postal_code` (`postalCode`, `neighborhood`) VALUES 
+('12043', 'Neukoelln'), 
+('12045', 'Neukoelln'), 
+('12047', 'Neukoelln'), 
+('12049', 'Neukoelln'), 
+('12051', 'Neukoelln'), 
+('12053', 'Neukoelln'), 
+('12055', 'Neukoelln'), 
+('12057', 'Neukoelln'), 
+('12059', 'Neukoelln'), 
+('12347', 'Britz'), 
+('12349', 'Buckow'), 
+('12351', 'Gropiusstadt'), 
+('12353', 'Gropiusstadt'), 
+('12355', 'Britz'), 
+('12357', 'Rudow'), 
+('12359', 'Rudow');
+
+INSERT INTO `address` (`street`, `houseNumber`, `type`, `postalCode`) VALUES 
+('Hauptstr.', '12', 'zu Hause', '12347'), 
+('Lindenweg', '34', 'zu Hause', '12347'), 
+('Sonnenallee', '56', 'zu Hause', '12347'), 
+('Gartenstr.', '78', 'Arbeit', '12347'), 
+('Kirschweg', '90', 'Arbeit', '12347'), 
+('Blumenstr.', '11', 'sonstiges', '12359'), 
+('Kastanienallee', '23', 'zu Hause', '12359'), 
+('Bahnhofstr.', '45', 'zu Hause', '12359'), 
+('Schulweg', '67', 'zu Hause', '12359'), 
+('Parkstr.', '89', 'Arbeit', '12359'), 
+('Dorfstr.', '10', 'Arbeit', '12349'), 
+('Heckenweg', '32', 'sonstiges', '12349'), 
+('Am See', '54', 'zu Hause', '12349'), 
+('Kastanienweg', '76', 'zu Hause', '12349'), 
+('Rosenallee', '98', 'Arbeit', '12349'), 
+('Franz-Körner-Str.', '12', 'sonstiges', '12351'), 
+('Neuköller Str.', '34', 'zu Hause', '12351'), 
+('Wutzkyallee', '56', 'zu Hause', '12351'), 
+('Lipschitzallee', '78', 'zu Hause', '12353'), 
+('Rudower Str.', '90', 'zu Hause', '12353'), 
+('Fritz-Erler-Allee', '11', 'zu Hause', '12355'), 
+('Johannisthaler Chaussee', '23', 'zu Hause', '12355'), 
+('Britzer Damm', '45', 'Arbeit', '12355'), 
+('Karl-Marx-Str.', '12', 'sonstiges', '12043'), 
+('Hermannstr.', '34', 'zu Hause', '12043'), 
+('Sonnenallee', '56', 'zu Hause', '12045'), 
+('Weichelstr.', '78', 'zu Hause', '12047'), 
+('Richardplatz', '90', 'zu Hause', '12049'), 
+('Karl-Marx-Platz', '11', 'zu Hause', '12051'), 
+('Weserstr.', '23', 'zu Hause', '12053'), 
+('Kottbusser Damm', '45', 'zu Hause', '12055'), 
+('Wildenbruchstr.', '89', 'Arbeit', '12059'), 
+('Gross-Ziethener Weg', '12', 'sonstiges', '12357'), 
+('Alt-Rudow', '34', 'zu Hause', '12357'), 
+('Neuköllner Str.', '56', 'zu Hause', '12357'), 
+('Köpenicker Str.', '78', 'zu Hause', '12357'), 
+('Stubenrauchstr.', '90', 'Arbeit', '12357'), 
+('Hermannstr.', '44', 'zu Hause', '12051'), 
+('Hermannstr.', '44', 'Arbeit', '12051');
+
+INSERT INTO `user_address` (`userID`, `addressID`) VALUES 
+(2, 1), 
+(1, 2), 
+(21, 3), 
+(7, 4), 
+(14, 5), 
+(19, 6), 
+(3, 7), 
+(4, 8), 
+(18, 9), 
+(18, 10), 
+(19, 11), 
+(20, 12), 
+(5, 13), 
+(6, 14), 
+(6, 15), 
+(8, 16), 
+(17, 17), 
+(15, 18), 
+(15, 19), 
+(11, 20), 
+(12, 21), 
+(10, 22), 
+(9, 23), 
+(9, 24), 
+(16, 25), 
+(13, 26), 
+(2, 27), 
+(3, 28), 
+(4, 29), 
+(5, 30), 
+(6, 31), 
+(7, 32), 
+(8, 33), 
+(9, 34), 
+(10, 35), 
+(11, 36), 
+(12, 37);
+
+INSERT INTO `book_details` (`ISBN`, `title`, `author`, `publisher`, `publicationYear`, `genre`, `pages`, `language`) VALUES 
+('978-0-14-118776-1', 'Brave New World', 'Aldous Huxley', 'Harper Perennial', '1932', 'Dystopie', 288, 'English'), 
+('978-0-316-76995-9', 'The Handmaid\'s Tale', 'Margaret Atwood', 'Houghton Mifflin Harcourt', '1985', 'Dystopie', 311, 'English'), 
+('978-0-452-28423-5', 'Animal Farm', 'George Orwell', 'Signet Classics', '1945', 'Allegorie', 112, 'English'), 
+('978-0-7432-7356-5', 'The Da Vinci Code', 'Dan Brown', 'Doubleday', '2003', 'Thriller', 454, 'Englisch'), 
+('978-0-7432-7356-6', 'Angels & Demons', 'Dan Brown', 'Pocket Books', '2000', 'Thriller', 736, 'English'), 
+('978-0-7432-7356-7', 'Inferno', 'Dan Brown', 'Doubleday', '2013', 'Thriller', 480, 'English'), 
+('978-3-16-148410-0', 'Der Steppenwolf', 'Hermann Hesse', 'Suhrkamp', '1927', 'Roman', 237, 'Deutsch'), 
+('978-3-257-06515-4', 'Siddhartha', 'Hermann Hesse', 'Suhrkamp', '1922', 'Roman', 152, 'Deutsch'), 
+('978-3-257-06558-1', 'Narziß und Goldmund', 'Hermann Hesse', 'Suhrkamp', '1930', 'Roman', 320, 'Deutsch'), 
+('978-3-257-23025-5', 'Homo Faber', 'Max Frisch', 'Suhrkamp', '1957', 'Roman', 192, 'Deutsch'), 
+('978-3-423-12427-7', 'Die Physiker', 'Friedrich Dürenmatt', 'Diogenes Verlag', '1962', 'tragikomödie', 208, 'Deutsch'), 
+('978-3-423-13062-9', 'Die Blechtrommel', 'Günter Grass', 'DTV', '1959', 'Roman', 780, 'Deutsch'), 
+('978-3-423-13548-8', 'Der Zauberberg', 'Thomas Mann', 'DTV', '1924', 'Roman', 720, 'Deutsch'), 
+('978-3-423-14510-4', 'Die Wand', 'Marlen Haushofer', 'DTV', '1963', 'Roman', 288, 'Deutsch'), 
+('978-3-423-28007-5', 'Tyll', 'Daniel Kehlmann', 'Rowohlt', '2017', 'Historischer Roman', 480, 'Deutsch'), 
+('978-3-442-54501-6', 'Der Vorleser', 'Bernhard Schlink', 'Goldmann Verlag', '1995', 'Roman', 224, 'Deutsch'), 
+('978-3-446-23267-4', 'Die Vermessung der Welt', 'Daniel Kehlmann', 'Hanser', '2005', 'Historischer Roman', 304, 'Deutsch'), 
+('978-3-446-26744-6', 'Schachnovelle', 'Stefan Zweig', 'Fischer Verlag', '1942', 'Roman', 96, 'Deutsch'), 
+('978-3-492-26030-0', 'Die unendliche Geschichte', 'Michael Ende', 'Thienemann', '1979', 'Fantasy', 448, 'Deutsch'), 
+('978-3-492-26922-8', 'Tintenherz', 'Cornelia Funke', 'Dressler Verlag', '2003', 'Fantasy', 576, 'Deutsch'), 
+('978-3-499-23166-8', 'Das Parfüm', 'Patrick Süsskind', 'Rohwohlt Verlag', '1985', 'Historischer Roman', 320, 'Deutsch'), 
+('978-3-518-37901-3', 'Die Verwandlung', 'Franz Kafka', 'Fischer Verlag', '1915', 'Roman', 102, 'Deutsch'), 
+('978-3-518-38958-6', 'Ansichten eines Clowns', 'Heinrich Böll', 'Fischer Verlag', '1963', 'expressionistische Literatur', 248, 'Deutsch'), 
+('978-3-518-45720-9', 'Die Vermessung der Welt', 'Daniel Kehlmann', 'Rowohlt', '2005', 'Historischer Roman', 304, 'Deutsch'), 
+('978-3-596-29423-7', 'Momo', 'Michael Ende', 'Fischer Verlag', '1973', 'Fantasy', 304, 'Deutsch'), 
+('978-84-204-8305-5', 'Cien años de soledad', 'Gabriel García Márquez', 'Alfaguara', '1967', 'Roman', 471, 'Spanisch'), 
+('978-84-376-0494-8', 'La sombra del viento', 'Carlos Ruiz Zafón', 'Planeta', '2001', 'Krimi', 576, 'Spanisch'), 
+('978-87-638-1377-4', 'Smilla\'s Sense of Snow', 'Peter Høeg', 'Rosinante', '1992', 'Krimi', 480, 'Dänisch');
+
+INSERT INTO `book` (`condition`, `availability`, `deliveryMethod`, `userID`, `ISBN`) VALUES 
+('akzeptabel', 1, 'Versand', 1, '978-0-7432-7356-6'), 
+('akzeptabel', 1, 'Abholung', 1, '978-0-452-28423-5'), 
+('neu', 1, 'Versand', 2, '978-3-518-38958-6'), 
+('wie neu', 1, 'Versand', 3, '978-0-14-118776-1'), 
+('sehr gut', 1, 'flexibel', 4, '978-84-204-8305-5'), 
+('gut', 1, 'flexibel', 5, '978-3-499-23166-8'), 
+('fehlerhaft', 1, 'Abholung', 6, '978-3-16-148410-0'), 
+('fehlerhaft', 1, 'Versand', 8, '978-3-442-54501-6'), 
+('gut', 1, 'Versand', 8, '978-3-423-13548-8'), 
+('neu', 1, 'flexibel', 9, '978-3-423-13062-9'), 
+('wie neu', 1, 'flexibel', 10, '978-3-423-12427-7'), 
+('wie neu', 1, 'flexibel', 10, '978-3-492-26030-0'), 
+('sehr gut', 1, 'Abholung', 11, '978-3-446-23267-4'), 
+('gut', 1, 'Versand', 12, '978-3-518-45720-9'), 
+('gut', 1, 'Versand', 12, '978-3-518-37901-3'), 
+('akzeptabel', 1, 'Versand', 13, '978-3-423-14510-4'), 
+('gut', 1, 'flexibel', 14, '978-3-257-23025-5'), 
+('gut', 2, 'Abholung', 16, '978-0-7432-7356-7'), 
+('akzeptabel', 2, 'Abholung', 17, '978-84-376-0494-8'), 
+('neu', 2, 'flexibel', 18, '978-3-596-29423-7'), 
+('wie neu', 1, 'flexibel', 19, '978-3-257-06558-1'), 
+('wie neu', 1, 'Versand', 20, '978-3-446-26744-6'), 
+('wie neu', 1, 'Versand', 20, '978-3-257-06515-4'), 
+('wie neu', 1, 'Versand', 20, '978-87-638-1377-4'), 
+('wie neu', 1, 'Versand', 20, '978-0-7432-7356-5'), 
+('wie neu', 1, 'Versand', 20, '978-0-316-76995-9'), 
+('wie neu', 1, 'Versand', 20, '978-3-492-26922-8'), 
+('wie neu', 2, 'Versand', 20, '978-3-423-28007-5'), 
+('wie neu', 2, 'Abholung', 8, '978-3-423-28007-5');
+
+INSERT INTO `postal_code_postal_address` (`postalcode`, `city`) VALUES 
+('01067', 'Dresden'), 
+('04109', 'Leipzig'), 
+('18055', 'Rostock'), 
+('19053', 'Schwerin'), 
+('20095', 'Hamburg'), 
+('24103', 'Kiel'), 
+('28195', 'Bremen'), 
+('30159', 'Hannover'), 
+('34117', 'Kassel'), 
+('38100', 'Braunschweig'), 
+('39104', 'Magdeburg'), 
+('50667', 'Köln'), 
+('60311', 'Frankfurt am Main'), 
+('65183', 'Wiesbaden'), 
+('66111', 'Saarbrücken'), 
+('68159', 'Mannheim'), 
+('70173', 'Stuttgart'), 
+('80331', 'München'), 
+('90402', 'Nürnberg'), 
+('93047', 'Regensburg'), 
+('99084', 'Erfurt');
+
+INSERT INTO `postal_address` (`street`, `houseNumber`, `postalcode`) VALUES 
+('Hauptstr.', '45', '20095'), 
+('Gartenweg', '12', '80331'), 
+('Gartenweg', '12', '80331'),  
+('Schulstraße', '78', '50667'), 
+('Bahnhofstraße', '5', '70173'), 
+('Parkallee', '6', '60311'), 
+('Lindenstraße', '23', '01067'), 
+('Rosenweg', '9', '04109'), 
+('Feldstraße', '11', '30159'), 
+('Sonnenweg', '4', '90402'), 
+('Bergstraße', '19', '28195'), 
+('Kirchweg', '13', '04109'), 
+('Tannenweg', '2', '18055'), 
+('Wiesenstraße', '17', '68159'), 
+('Seeweg', '22', '65183'), 
+('Waldstraße', '8', '34117'), 
+('Hügelweg', '20', '39104'), 
+('Kastanienweg', '14', '99084'), 
+('Blumenstraße', '3', '19053'), 
+('Wasserstraße', '27', '38100'), 
+('Fichtenweg', '15', '24103'), 
+('Amselweg', '18', '93047'), 
+('Birkenweg', '10', '66111');
+
+DELETE FROM `postal_address` 
+WHERE `street` = 'Gartenweg' AND `houseNumber` = '12' AND `postalcode` = '80331' 
+LIMIT 1;
+
+INSERT INTO `user_postal_address` (`userID`, `postalID`) VALUES 
+(12, 1), 
+(12, 3), 
+(13, 4), 
+(19, 5), 
+(2, 6), 
+(2, 7), 
+(19, 8), 
+(14, 9), 
+(10, 10), 
+(10, 11), 
+(9, 12), 
+(18, 13), 
+(19, 14), 
+(3, 15), 
+(20, 16), 
+(8, 17), 
+(4, 18), 
+(4, 19), 
+(18, 20), 
+(20, 21), 
+(5, 22), 
+(1, 23);
+
+INSERT INTO `waitlist` (`waitlistID`, `requestDate`, `endDate`, `status`, `userID`, `bookID`) VALUES 
+(6, '2024-01-01', NULL, 'offen', 1, 18), 
+(7, '2024-01-02', '2024-01-10', 'erfuellt', 1, 19), 
+(8, '2024-01-03', NULL, 'offen', 3, 20), 
+(9, '2024-01-04', '2024-01-12', 'abgebrochen', 4, 28), 
+(10, '2024-01-05', NULL, 'offen', 5, 29), 
+(11, '2024-01-06', NULL, 'offen', 8, 2), 
+(12, '2024-01-07', NULL, 'offen', 9, 11), 
+(13, '2024-01-08', '2024-01-20', 'abgebrochen', 11, 11), 
+(14, '2024-01-09', NULL, 'offen', 13, 1), 
+(15, '2024-01-10', '2024-01-22', 'erfuellt', 15, 7), 
+(16, '2024-01-11', NULL, 'offen', 16, 7), 
+(17, '2024-01-12', '2024-01-25', 'abgebrochen', 20, 11), 
+(18, '2024-01-13', NULL, 'offen', 13, 13), 
+(19, '2024-01-14', NULL, 'offen', 14, 15), 
+(20, '2024-01-15', NULL, 'offen', 15, 28), 
+(21, '2024-01-16', '2024-02-01', 'abgebrochen', 16, 22), 
+(22, '2024-01-17', NULL, 'offen', 17, 22), 
+(23, '2024-01-18', '2024-02-05', 'erfuellt', 18, 22), 
+(24, '2024-01-19', NULL, 'offen', 19, 27), 
+(25, '2024-01-20', '2024-02-10', 'abgebrochen', 19, 27), 
+(26, '2024-01-21', NULL, 'offen', 21, 18);
+
+INSERT INTO `loan` (`loanID`, `startDate`, `endDate`, `status`, `type`, `requestingUserID`, `bookID`) VALUES 
+(1, '2024-01-02', '2024-02-15', 'abgebrochen', 'Abholung', 1, 19), 
+(2, '2024-01-10', '2024-01-22', 'zurueckgegeben', 'Abholung', 15, 7), 
+(3, '2024-01-18', '2024-02-05', 'zurueckgegeben', 'Versand', 18, 22), 
+(4, '2024-05-04', NULL, 'offen', 'Versand', 18, 21), 
+(5, '2024-02-16', '2024-04-16', 'zurueckgegeben', 'Versand', 13, 4), 
+(6, '2024-02-18', '2024-02-28', 'zurueckgegeben', 'Versand', 1, 17), 
+(7, '2024-05-12', '2024-05-23', 'zurueckgegeben', 'Abholung', 3, 19), 
+(8, '2024-06-01', '2024-06-28', 'zurueckgegeben', 'Abholung', 9, 29), 
+(9, '2024-06-01', '2024-06-02', 'zurueckgegeben', 'Abholung', 20, 10), 
+(10, '2024-05-03', NULL, 'offen', 'Abholung', 11, 21), 
+(11, '2024-06-03', NULL, 'offen', 'Abholung', 7, 10), 
+(12, '2024-05-30', NULL, 'offen', 'Abholung', 6, 2), 
+(13, '2024-04-02', '2024-04-06', 'zurueckgegeben', 'Abholung', 5, 18), 
+(16, '2024-03-03', '2024-05-02', 'zurueckgegeben', 'Abholung', 21, 19), 
+(17, '2024-04-02', '2024-04-06', 'zurueckgegeben', 'Versand', 8, 1), 
+(18, '2024-04-17', '2024-06-01', 'zurueckgegeben', 'Versand', 13, 3), 
+(19, '2024-04-17', '2024-05-01', 'zurueckgegeben', 'Versand', 12, 6), 
+(20, '2024-05-17', '2024-05-21', 'zurueckgegeben', 'Versand', 13, 12), 
+(21, '2024-05-18', '2024-06-01', 'zurueckgegeben', 'Versand', 8, 20), 
+(22, '2024-06-05', NULL, 'offen', 'Versand', 12, 25);
+
+INSERT INTO `pickup_transaction` (`addressID`, `loanID`) VALUES 
+(2, 12), 
+(14, 2), 
+(23, 11), 
+(23, 9), 
+(25, 13), 
+(17, 1), 
+(17, 7), 
+(17, 16), 
+(11, 10), 
+(16, 8), 
+(16, 8);
+
+INSERT INTO `shipping_transaction` (`postalID`, `loanID`) VALUES 
+(13, 3), 
+(13, 4), 
+(4, 5), 
+(23, 6), 
+(17, 17), 
+(4, 18), 
+(3, 19), 
+(4, 20), 
+(17, 21), 
+(3, 22), 
+(3, 22);
+
+INSERT INTO `map` (`mapID`, `addressID`) VALUES 
+(1, 2), 
+(20, 5), 
+(23, 6), 
+(11, 8), 
+(21, 9), 
+(22, 10), 
+(24, 11), 
+(13, 13), 
+(2, 14), 
+(3, 15), 
+(9, 16), 
+(8, 17), 
+(5, 20), 
+(18, 22), 
+(25, 22), 
+(15, 23), 
+(16, 24), 
+(7, 25), 
+(12, 29), 
+(14, 30), 
+(4, 31), 
+(10, 33), 
+(17, 34), 
+(19, 35), 
+(26, 35), 
+(6, 36);
+
+INSERT INTO `book_map` (`mapID`, `bookID`) VALUES 
+(1, 2), 
+(11, 5), 
+(12, 5), 
+(13, 6), 
+(14, 6), 
+(2, 7), 
+(3, 7), 
+(4, 7), 
+(15, 10), 
+(16, 10), 
+(17, 10), 
+(25, 11), 
+(26, 11), 
+(18, 12), 
+(19, 12), 
+(5, 13), 
+(6, 13), 
+(20, 17), 
+(7, 18), 
+(8, 19), 
+(21, 20), 
+(22, 20), 
+(23, 21), 
+(24, 21), 
+(9, 29), 
+(10, 29);
+
+INSERT INTO `rating` (`ratingID`, `rating`, `comment`, `date`, `type`) VALUES 
+(1, 5, 'Sehr gutes Buch, nur zu empfehlen', '2024-02-02', 'Buch'), 
+(2, 4, 'Interessantes Buch, lesenswert', '2024-01-15', 'Buch'), 
+(3, 3, 'Gut, aber etwas langatmig', '2024-03-10', 'Buch'), 
+(4, 5, 'Fantastisch, sehr spannend', '2024-04-22', 'Buch'), 
+(5, 2, 'Nicht mein Geschmack, enttäuschend', '2024-05-11', 'Buch'), 
+(6, 1, 'Schlecht geschrieben, nicht zu empfehlen', '2024-06-01', 'Buch'), 
+(7, 4, 'Gut, aber mit einigen Schwächen', '2024-07-17', 'Buch'), 
+(8, 5, 'Ein Meisterwerk, absolut genial', '2024-08-25', 'Buch'), 
+(9, 3, 'Durchschnittlich, nichts Besonderes', '2024-09-05', 'Buch'), 
+(10, 4, 'Sehr unterhaltsam, gut geschrieben', '2024-10-14', 'Buch'), 
+(11, 5, 'Sehr zuverlässig und freundlich', '2024-01-20', 'Benutzer'), 
+(12, 4, 'Gute Kommunikation, alles bestens', '2024-02-25', 'Benutzer'), 
+(13, 3, 'In Ordnung, aber etwas unpünktlich', '2024-03-30', 'Benutzer'), 
+(14, 5, 'Perfekt, sehr zu empfehlen', '2024-04-15', 'Benutzer'), 
+(15, 2, 'Nicht sehr freundlich, könnte besser sein', '2024-05-20', 'Benutzer'), 
+(16, 1, 'Schlechte Erfahrung, nicht zu empfehlen', '2024-06-25', 'Benutzer'), 
+(17, 4, 'Alles gut, gerne wieder', '2024-07-30', 'Benutzer'), 
+(18, 3, 'Durchschnittlich, nichts Besonderes', '2024-08-10', 'Benutzer'), 
+(19, 5, 'Sehr hilfsbereit und zuverlässig', '2024-09-15', 'Benutzer'), 
+(20, 4, 'Guter Kontakt, alles in Ordnung', '2024-10-20', 'Benutzer');
+
+INSERT INTO `user_rating` (`ratingID`, `reviewerUserID`, `reviewedUserID`, `loanID`) VALUES 
+(11, 6, 15, 2), 
+(12, 18, 20, 3), 
+(13, 3, 13, 5), 
+(14, 1, 14, 6), 
+(15, 17, 3, 7), 
+(16, 9, 8, 8), 
+(17, 9, 20, 9), 
+(18, 5, 16, 13), 
+(19, 17, 21, 16), 
+(20, 1, 8, 17);
+
+INSERT INTO `book_rating` (`ratingID`, `loanID`) VALUES 
+(1, 2), 
+(2, 3), 
+(3, 5), 
+(4, 6), 
+(5, 7), 
+(6, 8), 
+(7, 9), 
+(8, 13), 
+(9, 16), 
+(10, 17);
+
+
+
+CREATE INDEX idx_rating_rating ON rating(rating); 
+
+CREATE INDEX idx_rating_comment ON rating(comment); 
+
+CREATE INDEX idx_rating_type ON rating(type); 
+
+CREATE INDEX idx_rating_rating_comment_type ON rating(rating, comment(100), type); 
+
+CREATE INDEX idx_book_condition ON book(`condition`); 
+
+CREATE INDEX idx_book_availability ON book(availability); 
+
+CREATE INDEX idx_book_deliveryMethod ON book(deliveryMethod); 
+
+CREATE INDEX idx_book_condition_availability ON book(`condition`, availability); 
+
+CREATE INDEX idx_book_condition_deliveryMethod ON book(`condition`, deliveryMethod); 
+
+CREATE INDEX idx_book_availability_deliveryMethod ON book(availability, deliveryMethod); 
+
+CREATE INDEX idx_book_condition_availability_deliveryMethod ON book(`condition`, availability, deliveryMethod); 
+
+CREATE INDEX idx_book_details_title ON book_details(title); 
+
+CREATE INDEX idx_book_details_author ON book_details(author); 
+
+CREATE INDEX idx_book_details_title_author ON book_details(title, author); 
+
+CREATE INDEX idx_user_lastName ON user(lastName); 
+
+CREATE INDEX idx_user_firstName_lastName ON user(firstName, lastName); 
+
+CREATE INDEX idx_waitlist_status ON waitlist(status);
