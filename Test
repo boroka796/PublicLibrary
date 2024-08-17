@@ -1,0 +1,219 @@
+-- user
+INSERT INTO `user` (firstName, lastName, email, phone) 
+VALUES ('Anna', 'Musterfrau', 'anna.musterfrau@example.com', '0987654321'); 
+
+UPDATE `user` 
+SET phone = '+49 151 45678901' 
+WHERE userID = 22; 
+
+DELETE FROM `user`  
+WHERE userID = 22; 
+
+-- Address
+INSERT INTO Address (street, houseNumber, `type`, postalCode) 
+VALUES ('Mariendorfer Weg', '58', 'zu Hause', '12051'); 
+
+UPDATE Address 
+SET street = 'Silbersteinstr.', houseNumber = '35' 
+WHERE addressID = 40; 
+
+DELETE FROM address 
+WHERE street = 'Silbersteinstr.'; 
+
+SELECT * FROM address WHERE `type`='sonstiges'; 
+
+-- Postal_code
+SELECT * FROM postal_code WHERE neighborhood='Gropiusstadt'; 
+
+-- User_address
+INSERT INTO user_address (userID, addressID) 
+VALUES (1, 1); 
+
+DELETE FROM user_address 
+WHERE userID = 1 AND addressID = 1; 
+
+SELECT * FROM user_address 
+WHERE userID = 9; 
+
+-- Book_details
+INSERT INTO book_details (ISBN, title, author, publisher, publicationYear, genre, pages, `language`) 
+VALUES ('978-0-14-313072-6', 'Ikigai: The Japanese Secret to a Long and Happy Life', 'Héctor García, Francesc Miralles', 'Penguin Books', 2017, 'Self-help', 208, 'English'); 
+
+UPDATE book_details 
+SET title = 'Ikigai: The Japanese Secret to a Long Life', pages = 210 
+WHERE ISBN = '978-0-14-313072-6'; 
+
+DELETE FROM book_details 
+WHERE ISBN = '978-0-14-313072-6'; 
+
+SELECT * FROM book_details 
+WHERE genre = 'expressionistische Literatur'; 
+
+-- Book
+INSERT INTO book (`condition`, availability, deliveryMethod, userID, ISBN) 
+VALUES ('neu', 1, 'Versand', 9, '978-0-14-118776-1'); 
+
+SELECT * FROM book 
+WHERE ISBN = '978-0-14-118776-1'; 
+
+UPDATE book 
+SET `condition` = 'sehr gut', availability = 2 
+WHERE bookID = 30; 
+
+DELETE FROM book 
+WHERE bookID = 30; 
+
+-- Postal_code_postal_address
+INSERT INTO postal_code_postal_address (postalcode, city) 
+VALUES ('18056', 'Rostock'); 
+
+SELECT * FROM postal_code_postal_address 
+WHERE postalcode = '18056'; 
+
+UPDATE postal_code_postal_address 
+SET city = 'rostock' 
+WHERE postalcode = '18056'; 
+
+DELETE FROM postal_code_postal_address 
+WHERE postalcode = '18056'; 
+
+-- Postal_address
+INSERT INTO postal_address (street, houseNumber, postalcode) 
+VALUES ('August-Bebel-Straße', '45', '38100'); 
+
+SELECT * FROM postal_address 
+WHERE postalcode = '38100'; 
+
+UPDATE postal_address 
+SET street = 'Bahnhofstraße', houseNumber = '50' 
+WHERE postalID = 25; 
+
+DELETE FROM postal_address 
+WHERE postalID = 25; 
+
+-- User_postal_address
+INSERT INTO user_postal_address (userID, postalID) 
+VALUES (1, 1); 
+
+SELECT * FROM user_postal_address 
+WHERE userID = '1'; 
+
+DELETE FROM user_postal_address 
+WHERE userID = 1 AND postalID = 1; 
+
+-- Waitlist
+INSERT INTO waitlist (requestDate, endDate, `status`, userID, bookID) 
+VALUES ('2024-01-01', NULL, 'offen', 1, 18); 
+
+INSERT INTO waitlist (requestDate, endDate, `status`, userID, bookID) 
+VALUES ('2024-01-01', NULL, 'offen', 1, 18); 
+
+UPDATE waitlist 
+SET endDate = '2024-03-01', `status` = 'erfuellt' 
+WHERE waitlistID = 28; 
+
+DELETE FROM waitlist 
+WHERE waitlistID = 27; 
+
+DELETE FROM waitlist 
+WHERE waitlistID = 28; 
+
+-- Loan
+INSERT INTO loan (startDate, endDate, `status`, `type`, requestingUserID, bookID) 
+VALUES ('2024-02-01', '2024-02-10', 'offen', 'Versand', 2, 20); 
+
+UPDATE loan 
+SET endDate = '2024-02-15', `status` = 'abgebrochen' 
+WHERE loanID = 23; 
+
+DELETE FROM loan 
+WHERE loanID = 23; 
+
+-- Pickup_transaction
+INSERT INTO pickup_transaction (addressID, loanID) 
+VALUES (17, 9); 
+
+UPDATE pickup_transaction 
+SET addressID = 18, loanID = 10 
+WHERE pickupID = 12; 
+
+DELETE FROM pickup_transaction 
+WHERE pickupID = 12; 
+
+-- Shipping_transaction
+INSERT INTO shipping_transaction (postalID, loanID) 
+VALUES (4, 6); 
+
+INSERT INTO shipping_transaction (postalID, loanID) 
+VALUES (4, 6); 
+
+UPDATE shipping_transaction 
+SET postalID = 5, loanID = 20 
+WHERE shippingID = 13; 
+
+DELETE FROM shipping_transaction 
+WHERE shippingID = 12; 
+
+DELETE FROM shipping_transaction 
+WHERE shippingID = 13; 
+
+SELECT * FROM shipping_transaction 
+WHERE postalID = 3; 
+
+-- Map
+INSERT INTO map (addressID) 
+VALUES (3); 
+
+UPDATE map 
+SET addressID = 4 
+WHERE mapID = 27; 
+
+DELETE FROM map 
+WHERE mapID = 27; 
+
+-- Book_map
+INSERT INTO book_map (mapID, bookID) 
+VALUES (2, 3); 
+
+DELETE FROM book_map 
+WHERE mapID = 2 AND bookID = 3; 
+
+SELECT * FROM book_map 
+WHERE mapID = 1; 
+
+-- Rating
+INSERT INTO rating (rating, `comment`, `date`, `type`) 
+VALUES (5, 'Sehr hilfreich und freundlich', '2024-10-15', 'Benutzer'); 
+
+INSERT INTO rating (rating, `comment`, `date`, `type`) 
+VALUES (5, 'Sehr hilfreich und freundlich', '2024-10-15', 'Benutzer'); 
+
+UPDATE rating 
+SET rating = 3, `comment` = 'Gut, aber verbesserungsfähig' 
+WHERE ratingID = 22; 
+
+DELETE FROM rating 
+WHERE ratingID = 22; 
+
+DELETE FROM rating 
+WHERE ratingID = 21; 
+
+-- User_rating
+INSERT INTO user_rating (ratingID, reviewerUserID, reviewedUserID, loanID) 
+VALUES (7, 7, 16, 3); 
+
+DELETE FROM user_rating 
+WHERE ratingID = 7; 
+
+SELECT * FROM user_rating 
+WHERE reviewerUserID = 6; 
+
+-- Book_rating
+INSERT INTO book_rating (ratingID, loanID) 
+VALUES (11, 20); 
+
+DELETE FROM book_rating 
+WHERE ratingID = 11; 
+
+SELECT * FROM book_rating 
+WHERE loanID = 2;
