@@ -63,7 +63,6 @@ Die Datenbank besteht aus 18 Tabellen, die folgendermaßen strukturiert sind:
 
 - **`book_rating`**: Diese Beziehungstabelle verknüpft Bewertungen mit den Büchern, die bewertet werden.
 
-![ER-Diagramm](https://viewer.diagrams.net/index.html?tags=%7B%7D&lightbox=1&highlight=0000ff&edit=_blank&layers=1&nav=1&title=Buecher.drawio#R%3Cmxfile%20pages%3D%222%22%3E%3Cdiagram%20name%3D%22ER-Diagramm%20Attribute%22%20id%3D%22vd4F22EB8XXKKZyA3tUX%22%3E7Z3vV5s8FMf%2FGl%2B6Q%2FjNy7XqNqfT6dRtb56DBS0TS6XUWv%2F6J7SEttyUkpYCkuw85zwFgdLke%2FNJbm5uDpTu89uX0B72zwPH9Q9kyXk7UI4OZBnppoT%2FF5%2BZzs8ohqTMzzyGnpNctThx7b27ycnkxsex57ijlQujIPAjb7h6shcMBm4vWjlnh2EwWb3sIfBXv3VoP7rgxHXP9uHZO8%2BJ%2BslZpFuLP3x1vcd%2B8tWmbMz%2F8GyTi5NfMurbTjBZOqUcHyjdMAii%2Bafnt67rx6VHyuXm17%2FDJ33w9eHsl3R5evfdvPT0w%2FnDTlhuSX9C6A6ich8tJz8tmpLych1cfMlhEEb94DEY2P7x4mwnDMYDx42fKuGjxTVnQTDEJxE%2B%2Bc%2BNommiBXscBfhUP3r2k7%2B6b170O779k5Yc%2FVn6y9Fb8uTZwZQcDKJwunRTfJjeFR8sbpsdkfsKFl1SxPGPX5JNUpBf3ODZxQ%2FFF4Sub0fe66q27ESij%2Bl16a2XgYe%2FV5YSe1KJOSXWdKjq0uozRsE47LnJbcu1yfykyA4f3Qg8CX9Y%2BkWLUzO)
 
 ## Installation
 
